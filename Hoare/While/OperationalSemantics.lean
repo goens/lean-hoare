@@ -40,7 +40,18 @@ inductive Com.Step : Context × Com → Context × Com → Prop
       @Expr.Step Γ e (Expr.bool .false) →
       Com.Step (Γ, Com.while e c) (Γ, Com.skip)
 
+notation G " ⊢ " e " ⟶ " e' => @Expr.Step G e e'
+notation G " ⊢ " e " ⟶* " e' =>  Relation.TransGen (@Expr.Step G) e e'
+
 infixl:50 " ⟹ " => Com.Step
-infixl:50 " ⟹ " => Expr.Step
+infixl:50 " ⟹* " => Relation.TransGen Com.Step
+
+-- `Trans` instances (for `calc`)
+instance {Γ : Context} : Trans (@Expr.Step Γ) (Relation.TransGen (@Expr.Step Γ)) (Relation.TransGen (@Expr.Step Γ)) where
+  trans h₁ h₂ :=  Relation.TransGen.trans (Relation.TransGen.single h₁) h₂
+instance {Γ : Context} : Trans (Relation.TransGen (@Expr.Step Γ)) (@Expr.Step Γ) (Relation.TransGen (@Expr.Step Γ)) where
+  trans :=  Relation.TransGen.tail
+instance {Γ : Context} : Trans (Relation.TransGen (@Expr.Step Γ)) (Relation.TransGen (@Expr.Step Γ)) (Relation.TransGen (@Expr.Step Γ)) where
+  trans :=  Relation.TransGen.trans
 
 end While
