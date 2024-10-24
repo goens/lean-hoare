@@ -1,4 +1,5 @@
 import Hoare.While.Syntax
+namespace While
 
 inductive Ty
 | num : Ty
@@ -40,6 +41,7 @@ def Expr.ty : Expr → Option Ty
   | Expr.gt e1 e2 => if e1.ty = some .num ∧ e2.ty = some .num then some .bool else none
   | Expr.and e1 e2 => if e1.ty = some .bool ∧ e2.ty = some .bool then some .bool else none
   | Expr.or e1 e2 => if e1.ty = some .bool ∧ e2.ty = some .bool then some .bool else none
+  | Expr.var _ => none -- typing not supported for variables yet...
 
 theorem WellTyped.not_eq_not_eq_ty {e1 e2 : Expr} {t1 t2 : Ty} :
   WellTyped e1 t1 → WellTyped e2 t2 → t1 ≠ t2 → ∀ t, ¬ (WellTyped (Expr.eq e1 e2) t) := by
@@ -129,6 +131,7 @@ def WellTyped.decide (e : Expr) (ty : Ty) : Decidable (WellTyped e ty) :=
            | isTrue h2 => isTrue (WellTyped.or e1 e2 h1 h2)
            | isFalse h2 => isFalse (by intro h; cases h; simp_all)
         | isFalse h1  => isFalse (by intro h; cases h; simp_all)
+    | Expr.var _ => isFalse (by intro h; cases h) -- typing not supported for variables yet...
 
 instance {e : Expr} {ty : Ty} : Decidable (WellTyped e ty) := WellTyped.decide e ty
 
@@ -175,3 +178,5 @@ theorem WellTyped.some_ty {e ty} : e.ty = some ty → WellTyped e ty := by
 
 theorem WellTyped.ty {e ty} : WellTyped e ty ↔ e.ty = some ty :=
  ⟨fun h => ty_some h, fun h => some_ty h⟩
+
+end While

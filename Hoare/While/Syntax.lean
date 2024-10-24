@@ -1,10 +1,12 @@
 -- Based on https://www.cl.cam.ac.uk/archive/mjcg/Teaching/2015/Hoare/Notes/
 
+namespace While
 
 /-- Abstract Syntax of Expressions -/
 inductive Expr
 | num : Nat → Expr
 | bool : Bool → Expr
+| var : String → Expr
 | add : Expr → Expr → Expr
 | sub : Expr → Expr → Expr
 | mul : Expr → Expr → Expr
@@ -20,6 +22,8 @@ inductive Com
 | seq : Com → Com → Com
 | cond : Expr → Com → Com → Com
 | while : Expr → Com → Com
+| skip : Com
+
 -- for : Com → Expr → Com → Com → Com
 -- block : Com → Com
 
@@ -29,6 +33,7 @@ declare_syntax_cat statement
 declare_syntax_cat com
 
 syntax num : expr
+syntax ident : expr
 syntax "true" : expr
 syntax "false" : expr
 syntax "(" expr ")" : expr
@@ -51,6 +56,7 @@ syntax "[com|" com "]" : term
 
 macro_rules
 | `([expr| $n:num]) => `(Expr.num $n)
+| `([expr| $x:ident]) => `(Expr.var $(Lean.quote x.getId.toString))
 | `([expr| true]) => `(Expr.bool «true»)
 | `([expr| false]) => `(Expr.bool «false»)
 | `([expr| $e1 + $e2]) => `(Expr.add [expr| $e1] [expr| $e2])
@@ -75,3 +81,5 @@ macro_rules
 
 instance : Coe Nat Expr := ⟨Expr.num⟩
 instance : Coe Bool Expr := ⟨Expr.bool⟩
+
+end While

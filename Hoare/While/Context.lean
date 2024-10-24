@@ -1,0 +1,25 @@
+import Hoare.While.Syntax
+
+namespace While
+
+inductive Val
+  | num : Nat → Val
+  | bool : Bool → Val
+
+-- Some Coercions
+instance : Coe Nat Val := ⟨Val.num⟩
+instance : Coe Bool Val := ⟨Val.bool⟩
+instance {n : Nat} : CoeDep Val (Val.num n) Nat := ⟨n⟩
+instance {b : Bool} : CoeDep Val (Val.bool b) Bool := ⟨b⟩
+
+def Val.toExpr : Val → Expr
+  | Val.num n => Expr.num n
+  | Val.bool b => Expr.bool b
+
+instance : Coe Val Expr := ⟨Val.toExpr⟩
+
+abbrev Context := List (String × Val)
+def Context.getVal? (ctx : Context) (x : String) : Option Val := ctx.lookup x
+def Context.assign (ctx : Context) (x : String) (v : Val) : Context := (x, v) :: ctx
+
+end While
