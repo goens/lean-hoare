@@ -48,8 +48,8 @@ syntax expr " || " expr : expr
 
 syntax ident " := " expr : com
 syntax com " ; " com : com
-syntax "if " expr " then " com " else " com "end" : com
-syntax "while " expr " do " com "end" : com
+syntax "if " expr " then " com " else " com "fi" : com
+syntax "while " expr " do " com "od" : com
 
 syntax "[expr|" expr "]" : term
 syntax "[com|" com "]" : term
@@ -69,8 +69,8 @@ macro_rules
 | `([expr| $e1 || $e2]) => `(Expr.or [expr| $e1] [expr| $e2])
 | `([com| $x:ident := $e]) => `(Com.assign $(Lean.quote x.getId.toString) [expr| $e])
 | `([com| $c1; $c2]) => `(Com.seq [com| $c1] [com| $c2])
-| `([com| if $e then $c1 else $c2 end]) => `(Com.cond [expr| $e] [com| $c1] [com| $c2])
-| `([com| while $e do $c end]) => `(Com.while [expr| $e] [com| $c])
+| `([com| if $e then $c1 else $c2 fi]) => `(Com.cond [expr| $e] [com| $c1] [com| $c2])
+| `([com| while $e do $c od]) => `(Com.while [expr| $e] [com| $c])
 
 -- Quasiquotation
 syntax "$(" term ")" : expr

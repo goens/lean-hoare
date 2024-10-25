@@ -20,6 +20,11 @@ inductive Expr.Step {Γ : Context} : Expr → Expr → Prop
       Expr.Step (Expr.gt e1 e2) (Expr.bool (n1 > n2))
   | var {x : String} {v : Val} : Γ.getVal? x = some v → Expr.Step (Expr.var x) v.toExpr
 
+def Expr.isValue : Expr → Prop
+  | Expr.num _ => True
+  | Expr.bool _ => True
+  | _ => False
+
 inductive Com.Step : Context × Com → Context × Com → Prop
   | assign {Γ Γ' : Context} {x : String} {e : Expr} {v : Val} :
       @Expr.Step Γ e v.toExpr →
