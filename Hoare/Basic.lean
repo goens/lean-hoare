@@ -1,19 +1,19 @@
 import Hoare.While
+import Hoare.Statements
 
 namespace Hoare
 
 structure Triple where
-  (P : Context → Prop)
+  (P : Statement)
   (c : While.Com)
-  (Q : Context → Prop)
+  (Q : Statement)
 
--- This should not be `term` but rather `statement` with restricted propositional fragment
-syntax "{" term "}" com "{" term "}" : term
+syntax "{" stmt "}" com "{" stmt "}" : term
 macro_rules
-| `({ $P } $c:com { $Q }) => `(Triple.mk $P [com| $c] $Q)
+| `({ $P } $c:com { $Q }) => `(Triple.mk [stmt| $P] [com| $c] [stmt|$Q])
 
 -- TODO: Delaborate identifiers, build functions for a natural notation for triples
 
-#check { fun _ => True } X := 4 { fun _ => True }
+#check { true } X := 4 { X > 4 }
 
 end Hoare

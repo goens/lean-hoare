@@ -60,6 +60,14 @@ macro_rules
 | `($Γ:ident ⊢ 〚$e:expr〛) => `(Expr.val? $Γ [expr| $e] )
 | `(〚 $c:com 〛) => `(Com.eval Context.empty [com|$c])
 
+-- Not sure why I need to spell this one out to Lean
+instance decideVal? {Γ : Context} {e : Expr} : Decidable (e.val? Γ =  some (Val.bool .true)) :=
+  match e.val? Γ with
+    | some (Val.bool .true) => isTrue rfl
+    | some (Val.bool .false) => isFalse (by intro h; cases h)
+    | some (Val.num _) => isFalse (by intro h; cases h)
+    | none => isFalse (by intro h; cases h)
+
 #eval 〚
   X := 0;
   Y := 0;
