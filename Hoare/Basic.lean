@@ -10,10 +10,12 @@ structure Triple where
 
 syntax "{" stmt "}" com "{" stmt "}" : term
 macro_rules
-| `({ $P } $c:com { $Q }) => `(Triple.mk [stmt| $P] [com| $c] [stmt|$Q])
+| `({ $P:stmt } $c:com { $Q:stmt }) => `(Triple.mk [stmt| $P] [com| $c] [stmt|$Q])
 
 -- TODO: Delaborate identifiers, build functions for a natural notation for triples
 
 #check { true } X := 4 { X > 4 }
+#check fun (P Q : Statement) => { $(P) } X := 4 { $(Q) }
+
 
 end Hoare

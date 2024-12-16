@@ -18,6 +18,7 @@ syntax stmt " ∨ " stmt : stmt
 syntax "¬" stmt : stmt
 syntax stmt " ⇒ " stmt : stmt
 syntax stmt " ⇔ " stmt : stmt
+syntax "€" noWs term : stmt
 syntax "[stmt|" stmt "]" : term
 
 macro_rules
@@ -84,3 +85,8 @@ def Statement.decidable  (Γ  : While.Context) (s : Statement) : Decidable (Stat
           | isFalse h' => isTrue (by simp [Statement.eval, h, h'])
 
 instance {s : Statement} {Γ  : While.Context} : Decidable (Statement.eval Γ s) := Statement.decidable Γ s
+
+-- Quasiquotation
+syntax "$(" term ")" : statement
+macro_rules
+| `([stmt| $($t:term)]) => `($t)
