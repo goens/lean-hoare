@@ -4,6 +4,7 @@ namespace Hoare
 
 open While
 
+-- TODO: define substitution properly
 axiom _root_.Statement.subst :  String → Expr → Statement → Statement
 
 inductive TripleHolds : Triple → Prop

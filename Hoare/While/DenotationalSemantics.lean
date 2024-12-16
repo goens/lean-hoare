@@ -26,6 +26,12 @@ def Expr.val? (Γ : Context) : Expr → Option Val
   | Expr.gt e1 e2 => match e1.val? Γ, e2.val? Γ with
     | some (Val.num n1), some (Val.num n2) => some (Val.bool (n1 > n2))
     | _, _ => none
+  | Expr.le e1 e2 => match e1.val? Γ, e2.val? Γ with
+    | some (Val.num n1), some (Val.num n2) => some (Val.bool (n1 ≤ n2))
+    | _, _ => none
+  | Expr.ge e1 e2 => match e1.val? Γ, e2.val? Γ with
+    | some (Val.num n1), some (Val.num n2) => some (Val.bool (n1 ≥ n2))
+    | _, _ => none
   | Expr.and e1 e2 => match e1.val? Γ, e2.val? Γ with
     | some (Val.bool b1), some (Val.bool b2) => some (Val.bool (b1 && b2))
     | _, _ => none

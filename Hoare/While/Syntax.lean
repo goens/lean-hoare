@@ -13,6 +13,8 @@ inductive Expr
 | eq : Expr → Expr → Expr
 | lt : Expr → Expr → Expr
 | gt : Expr → Expr → Expr
+| le : Expr → Expr → Expr
+| ge : Expr → Expr → Expr
 | and : Expr → Expr → Expr
 | or : Expr → Expr → Expr
 deriving Repr, DecidableEq
@@ -42,7 +44,9 @@ syntax expr " - " expr : expr
 syntax expr " * " expr : expr
 syntax expr " == " expr : expr
 syntax expr " < " expr : expr
+syntax expr " <= " expr : expr
 syntax expr " > " expr : expr
+syntax expr " >= " expr : expr
 syntax expr " && " expr : expr
 syntax expr " || " expr : expr
 
@@ -65,8 +69,11 @@ macro_rules
 | `([expr| $e1 == $e2]) => `(Expr.eq [expr| $e1] [expr| $e2])
 | `([expr| $e1 < $e2]) => `(Expr.lt [expr| $e1] [expr| $e2])
 | `([expr| $e1 > $e2]) => `(Expr.gt [expr| $e1] [expr| $e2])
+| `([expr| $e1 <= $e2]) => `(Expr.le [expr| $e1] [expr| $e2])
+| `([expr| $e1 >= $e2]) => `(Expr.ge [expr| $e1] [expr| $e2])
 | `([expr| $e1 && $e2]) => `(Expr.and [expr| $e1] [expr| $e2])
 | `([expr| $e1 || $e2]) => `(Expr.or [expr| $e1] [expr| $e2])
+| `([expr| ($e)]) => `([expr| $e])
 | `([com| $x:ident := $e]) => `(Com.assign $(Lean.quote x.getId.toString) [expr| $e])
 | `([com| $c1; $c2]) => `(Com.seq [com| $c1] [com| $c2])
 | `([com| if $e then $c1 else $c2 fi]) => `(Com.cond [expr| $e] [com| $c1] [com| $c2])

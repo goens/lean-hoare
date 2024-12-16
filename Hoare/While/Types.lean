@@ -21,6 +21,10 @@ inductive WellTyped : Expr → Ty → Prop
     WellTyped (Expr.lt e1 e2) Ty.bool
 | gt : ∀ e1 e2, WellTyped e1 Ty.num → WellTyped e2 Ty.num →
     WellTyped (Expr.gt e1 e2) Ty.bool
+| le : ∀ e1 e2, WellTyped e1 Ty.num → WellTyped e2 Ty.num →
+    WellTyped (Expr.le e1 e2) Ty.bool
+| ge : ∀ e1 e2, WellTyped e1 Ty.num → WellTyped e2 Ty.num →
+    WellTyped (Expr.ge e1 e2) Ty.bool
 | and : ∀ e1 e2, WellTyped e1 Ty.bool → WellTyped e2 Ty.bool →
     WellTyped (Expr.and e1 e2) Ty.bool
 | or : ∀ e1 e2, WellTyped e1 Ty.bool → WellTyped e2 Ty.bool →
@@ -39,6 +43,8 @@ def Expr.ty : Expr → Option Ty
   | Expr.eq e1 e2 => if e1.ty = e2.ty ∧ e1.ty.isSome then some .bool else none
   | Expr.lt e1 e2 => if e1.ty = some .num ∧ e2.ty = some .num then some .bool else none
   | Expr.gt e1 e2 => if e1.ty = some .num ∧ e2.ty = some .num then some .bool else none
+  | Expr.le e1 e2 => if e1.ty = some .num ∧ e2.ty = some .num then some .bool else none
+  | Expr.ge e1 e2 => if e1.ty = some .num ∧ e2.ty = some .num then some .bool else none
   | Expr.and e1 e2 => if e1.ty = some .bool ∧ e2.ty = some .bool then some .bool else none
   | Expr.or e1 e2 => if e1.ty = some .bool ∧ e2.ty = some .bool then some .bool else none
   | Expr.var _ => none -- typing not supported for variables yet...
@@ -117,6 +123,20 @@ def WellTyped.decide (e : Expr) (ty : Ty) : Decidable (WellTyped e ty) :=
            | isTrue h2 => isTrue (WellTyped.gt e1 e2 h1 h2)
            | isFalse h2 => isFalse (by intro h; cases h; simp_all)
         | isFalse h1  => isFalse (by intro h; cases h; simp_all)
+    | Expr.le e1 e2 => match ty with
+      | .num => isFalse (by intro h; cases h)
+      | .bool => match WellTyped.decide e1 Ty.num with
+        | isTrue h1 => match WellTyped.decide e2 Ty.num with
+           | isTrue h2 => isTrue (WellTyped.le e1 e2 h1 h2)
+           | isFalse h2 => isFalse (by intro h; cases h; simp_all)
+        | isFalse h1  => isFalse (by intro h; cases h; simp_all)
+    | Expr.ge e1 e2 => match ty with
+      | .num => isFalse (by intro h; cases h)
+      | .bool => match WellTyped.decide e1 Ty.num with
+        | isTrue h1 => match WellTyped.decide e2 Ty.num with
+           | isTrue h2 => isTrue (WellTyped.ge e1 e2 h1 h2)
+           | isFalse h2 => isFalse (by intro h; cases h; simp_all)
+        | isFalse h1  => isFalse (by intro h; cases h; simp_all)
     | Expr.and e1 e2 => match ty with
       | .num => isFalse (by intro h; cases h)
       | .bool => match WellTyped.decide e1 Ty.bool with
@@ -147,6 +167,8 @@ theorem WellTyped.ty_some {e ty} : WellTyped e ty → e.ty = some ty :=
     case eq e1 _ _ h1 h2 => simp [Expr.ty, h1, h2]
     case lt _ _ h1 h2 => simp [Expr.ty, h1, h2]
     case gt _ _ h1 h2 => simp [Expr.ty, h1, h2]
+    case le _ _ h1 h2 => simp [Expr.ty, h1, h2]
+    case ge _ _ h1 h2 => simp [Expr.ty, h1, h2]
     case and _ _ h1 h2 => simp [Expr.ty, h1, h2]
     case or _ _ h1 h2 => simp [Expr.ty, h1, h2]
 
@@ -171,6 +193,10 @@ theorem WellTyped.some_ty {e ty} : e.ty = some ty → WellTyped e ty := by
     have h' := h.2.symm; subst h'; exact WellTyped.lt e1 e2 ih_e1 ih_e2
   case gt e1 e2 ih_e1 ih_e2 =>
     have h' := h.2.symm; subst h'; exact WellTyped.gt e1 e2 ih_e1 ih_e2
+  case le e1 e2 ih_e1 ih_e2 =>
+    have h' := h.2.symm; subst h'; exact WellTyped.le e1 e2 ih_e1 ih_e2
+  case ge e1 e2 ih_e1 ih_e2 =>
+    have h' := h.2.symm; subst h'; exact WellTyped.ge e1 e2 ih_e1 ih_e2
   case and e1 e2 ih_e1 ih_e2 =>
     have h' := h.2.symm; subst h'; exact WellTyped.and e1 e2 ih_e1 ih_e2
   case or e1 e2 ih_e1 ih_e2 =>
