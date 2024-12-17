@@ -29,6 +29,39 @@ macro_rules
   | `([stmt| $x ⇒ $y]) => `(Statement.impl [stmt|$x] [stmt|$y])
   | `([stmt| $x ⇔ $y]) => `(Statement.equiv [stmt|$x] [stmt|$y])
 
+instance : Coe (Lean.TSyntax `expr) (Lean.TSyntax `stmt) where
+  coe s := ⟨s.raw⟩
+
+@[app_unexpander Statement.atom]
+def unexpandAtom : Lean.PrettyPrinter.Unexpander
+  | `($_ [expr| $e:expr]) => `([stmt| $e])
+  | _ => throw ()
+
+@[app_unexpander Statement.disj]
+def unexpandDisj : Lean.PrettyPrinter.Unexpander
+  | `($_ [stmt| $p:stmt] [stmt| $q:stmt]) => `([stmt| $p ∨ $q])
+  | _ => throw ()
+
+@[app_unexpander Statement.conj]
+def unexpandConj : Lean.PrettyPrinter.Unexpander
+  | `($_ [stmt| $p:stmt] [stmt| $q:stmt]) => `([stmt| $p ∧ $q])
+  | _ => throw ()
+
+@[app_unexpander Statement.neg]
+def unexpandNeg : Lean.PrettyPrinter.Unexpander
+  | `($_ [stmt| $p:stmt]) => `([stmt| ¬$p])
+  | _ => throw ()
+
+@[app_unexpander Statement.impl]
+def unexpandImpl : Lean.PrettyPrinter.Unexpander
+  | `($_ [stmt| $p:stmt] [stmt| $q:stmt]) => `([stmt| $p ⇒ $q])
+  | _ => throw ()
+
+@[app_unexpander Statement.equiv]
+def unexpandEquiv : Lean.PrettyPrinter.Unexpander
+  | `($_ [stmt| $p:stmt] [stmt| $q:stmt]) => `([stmt| $p ⇔ $q])
+  | _ => throw ()
+
 def Statement.eval (Γ : While.Context) : Statement  → Prop
   | atom e => match e.val? Γ with
     | some (While.Val.bool b) => (b = .true)

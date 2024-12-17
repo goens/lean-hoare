@@ -23,6 +23,8 @@ def sqrt_spec (x : Nat) : Triple :=
   od
   {X == $(x) ∧ S * S == X }
 
+#eval repr sqrt
+
 theorem sqrt_spec_holds : ∀ x, TripleHolds (sqrt_spec x) := by
   simp [sqrt_spec]
   sorry
