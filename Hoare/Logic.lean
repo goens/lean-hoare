@@ -8,7 +8,7 @@ open While
 --axiom _root_.Statement.subst :  String → Expr → Statement → Statement
 
 -- Not really sure if this is capture-avoiding subsitution, it was the most
--- naive thing to try. 
+-- naive thing to try.
 
 def Expr.subst (x : String) (e : Expr) (e' : Expr) : Expr :=
   match e' with
@@ -42,6 +42,8 @@ inductive TripleHolds : Triple → Prop
   -- so I have added assign' which makes all parameters explicit and with assign prime I am
   -- able to prove hoare triple statment in Assign_example.lean
   | assign' (P : Statement) (e : Expr) (x : String) (c : Com) : TripleHolds {$(Statement.subst x e P)} $(c) {$(P)}
+  -- The problem here is that `c` is not related to `e` and `x`, so it's hard for Lean to figure things out.
+  -- I had put `c` as a placeholder originally, but this should be something like `Com.assign (Expr.var x) (e)` instead.
   | seq {P Q R : Statement} {c₁ c₂ : Com} :
       TripleHolds {$(P)} $(c₁) {$(Q)} → TripleHolds {$(Q)} $(c₂) {$(R)} →
       TripleHolds {$(P)} $(c₁);$(c₂) {$(Q)}
