@@ -10,6 +10,7 @@ inductive Statement
   | neg : Statement → Statement
   | impl : Statement → Statement → Statement
   | equiv : Statement → Statement → Statement
+deriving DecidableEq
 
 declare_syntax_cat stmt
 syntax expr : stmt
