@@ -60,10 +60,10 @@ partial def Com.eval (Γ : Context := Context.empty) : Com → Context
     | some (Val.bool .false) => Γ
     | _ => Γ
 
-syntax ident "⊢" " 〚" expr "〛" : term
+syntax ident "⊢" " 〚" bexpr "〛" : term
 syntax "〚" com "〛" : term
 macro_rules
-| `($Γ:ident ⊢ 〚$e:expr〛) => `(Expr.val? $Γ [expr| $e] )
+| `($Γ:ident ⊢ 〚$e:bexpr〛) => `(Expr.val? $Γ [bexpr| $e] )
 | `(〚 $c:com 〛) => `(Com.eval Context.empty [com|$c])
 
 -- Not sure why I need to spell this one out to Lean

@@ -59,4 +59,9 @@ instance {Γ : Context} : Trans (Relation.TransGen (@Expr.Step Γ)) (@Expr.Step 
 instance {Γ : Context} : Trans (Relation.TransGen (@Expr.Step Γ)) (Relation.TransGen (@Expr.Step Γ)) (Relation.TransGen (@Expr.Step Γ)) where
   trans :=  Relation.TransGen.trans
 
+def Com.reduces (c : Com) (Γ Γ' : Context) : Prop := (Γ, c) ⟹* (Γ', Com.skip)
+
+def Com.equivalent (c1 c2 : Com) : Prop := ∀ (Γ : Context),
+  ∃ (Γ' : Context), c1.reduces Γ Γ' → c2.reduces Γ Γ'
+
 end While

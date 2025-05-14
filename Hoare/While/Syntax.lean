@@ -30,64 +30,70 @@ inductive Com
 -- block : Com → Com
 
 -- Concrete syntax
-declare_syntax_cat expr
+declare_syntax_cat bexpr
+declare_syntax_cat nexpr
 declare_syntax_cat statement
 declare_syntax_cat com
 
-syntax num : expr
-syntax ident : expr
-syntax "true" : expr
-syntax "false" : expr
-syntax "(" expr ")" : expr
-syntax expr " + " expr : expr
-syntax expr " - " expr : expr
-syntax expr " * " expr : expr
-syntax expr " == " expr : expr
-syntax expr " < " expr : expr
-syntax expr " <= " expr : expr
-syntax expr " > " expr : expr
-syntax expr " >= " expr : expr
-syntax expr " && " expr : expr
-syntax expr " || " expr : expr
+syntax num : nexpr
+syntax ident : nexpr
+syntax "true" : bexpr
+syntax "false" : bexpr
+syntax "(" bexpr ")" : bexpr
+syntax "(" nexpr ")" : nexpr
+syntax nexpr " + " nexpr : nexpr
+syntax nexpr " - " nexpr : nexpr
+syntax nexpr " * " nexpr : nexpr
+syntax nexpr " == " nexpr : bexpr
+syntax nexpr " < "  nexpr : bexpr
+syntax nexpr " <= " nexpr : bexpr
+syntax nexpr " > "  nexpr : bexpr
+syntax nexpr " >= " nexpr : bexpr
+syntax bexpr " && " bexpr : bexpr
+syntax bexpr " || " bexpr : bexpr
 
-syntax ident " := " expr : com
-syntax "let " ident " := " expr : com
+syntax ident " := " nexpr : com
+syntax "let " ident " := " nexpr : com
 syntax com "; " com : com
-syntax "if " expr " then " com " else " com " fi" : com
-syntax "while " expr " do " com " od" : com
+syntax "if " bexpr " then " com " else " com " fi" : com
+syntax "while " bexpr " do " com " od" : com
 syntax "skip " : com
 
-syntax "[expr|" expr "]" : term
+syntax "[bexpr|" bexpr "]" : term
+syntax "[nexpr|" nexpr "]" : term
 syntax "[com|" com "]" : term
 
 macro_rules
-| `([expr| $n:num]) => `(Expr.num $n)
-| `([expr| $x:ident]) => `(Expr.var $(Lean.quote x.getId.toString))
-| `([expr| true]) => `(Expr.bool «true»)
-| `([expr| false]) => `(Expr.bool «false»)
-| `([expr| $e1 + $e2]) => `(Expr.add [expr| $e1] [expr| $e2])
-| `([expr| $e1 - $e2]) => `(Expr.sub [expr| $e1] [expr| $e2])
-| `([expr| $e1 * $e2]) => `(Expr.mul [expr| $e1] [expr| $e2])
-| `([expr| $e1 == $e2]) => `(Expr.eq [expr| $e1] [expr| $e2])
-| `([expr| $e1 < $e2]) => `(Expr.lt [expr| $e1] [expr| $e2])
-| `([expr| $e1 > $e2]) => `(Expr.gt [expr| $e1] [expr| $e2])
-| `([expr| $e1 <= $e2]) => `(Expr.le [expr| $e1] [expr| $e2])
-| `([expr| $e1 >= $e2]) => `(Expr.ge [expr| $e1] [expr| $e2])
-| `([expr| $e1 && $e2]) => `(Expr.and [expr| $e1] [expr| $e2])
-| `([expr| $e1 || $e2]) => `(Expr.or [expr| $e1] [expr| $e2])
-| `([expr| ($e)]) => `([expr| $e])
+| `([nexpr| $n:num]) => `(Expr.num $n)
+| `([nexpr| $x:ident]) => `(Expr.var $(Lean.quote x.getId.toString))
+| `([bexpr| true]) => `(Expr.bool «true»)
+| `([bexpr| false]) => `(Expr.bool «false»)
+| `([nexpr| $e1 + $e2]) => `(Expr.add [nexpr| $e1] [nexpr| $e2])
+| `([nexpr| $e1 - $e2]) => `(Expr.sub [nexpr| $e1] [nexpr| $e2])
+| `([nexpr| $e1 * $e2]) => `(Expr.mul [nexpr| $e1] [nexpr| $e2])
+| `([bexpr| $e1:nexpr == $e2]) => `(Expr.eq [nexpr| $e1] [nexpr| $e2])
+| `([bexpr| $e1:nexpr < $e2]) => `(Expr.lt [nexpr| $e1] [nexpr| $e2])
+| `([bexpr| $e1:nexpr > $e2]) => `(Expr.gt [nexpr| $e1] [nexpr| $e2])
+| `([bexpr| $e1:nexpr <= $e2]) => `(Expr.le [nexpr| $e1] [nexpr| $e2])
+| `([bexpr| $e1:nexpr >= $e2]) => `(Expr.ge [nexpr| $e1] [nexpr| $e2])
+| `([bexpr| $e1:bexpr && $e2]) => `(Expr.and [bexpr| $e1] [bexpr| $e2])
+| `([bexpr| $e1:bexpr || $e2]) => `(Expr.or [bexpr| $e1] [bexpr| $e2])
+| `([bexpr| ($e)]) => `([bexpr| $e])
+| `([nexpr| ($e)]) => `([nexpr| $e])
 | `([com| skip]) => `(Com.skip)
-| `([com| let $x:ident := $e]) => `(Com.assign $(Lean.quote x.getId.toString) [expr| $e])
-| `([com| $x:ident := $e]) => `(Com.assign $(Lean.quote x.getId.toString) [expr| $e])
+| `([com| let $x:ident := $e]) => `(Com.assign $(Lean.quote x.getId.toString) [nexpr| $e])
+| `([com| $x:ident := $e]) => `(Com.assign $(Lean.quote x.getId.toString) [nexpr| $e])
 | `([com| $c1; $c2]) => `(Com.seq [com| $c1] [com| $c2])
-| `([com| if $e then $c1 else $c2 fi]) => `(Com.cond [expr| $e] [com| $c1] [com| $c2])
-| `([com| while $e do $c od]) => `(Com.while [expr| $e] [com| $c])
+| `([com| if $e then $c1 else $c2 fi]) => `(Com.cond [bexpr| $e] [com| $c1] [com| $c2])
+| `([com| while $e do $c od]) => `(Com.while [bexpr| $e] [com| $c])
 
 -- Quasiquotation
-syntax "$(" term ")" : expr
+syntax "$(" term ")" : bexpr
+syntax "$(" term ")" : nexpr
 syntax "$(" term ")" : com
 macro_rules
-| `([expr| $($t:term)]) => `($t)
+| `([bexpr| $($t:term)]) => `($t)
+| `([nexpr| $($t:term)]) => `($t)
 | `([com| $($t:term)]) => `($t)
 
 instance : Coe Nat Expr := ⟨Expr.num⟩
@@ -103,75 +109,74 @@ instance : Coe Lean.Ident (Lean.TSyntax `expr) where
 
 @[app_unexpander While.Expr.num]
 def unexpandNum : Lean.PrettyPrinter.Unexpander
-  | `($_ $x:num) => `([expr| $x])
-  | `($_ $x:ident) => `([expr| $($x)])
+  | `($_ $x:num) => `([nexpr| $x:num])
+  | `($_ $x:ident) => `([nexpr| $($x)])
   | _ => throw ()
 
 @[app_unexpander While.Expr.bool]
 def unexpandBool : Lean.PrettyPrinter.Unexpander
-  | `($_ Bool.true) => `([expr| true])
-  | `($_ Bool.false) => `([expr| false])
-  | `($_ «true») => `([expr| true])
-  | `($_ «false») => `([expr| false])
-  | `($_ $x:ident) => `([expr| $(x)])
+  | `($_ Bool.true) => `([bexpr| true])
+  | `($_ Bool.false) => `([bexpr| false])
+  | `($_ «true») => `([bexpr| true])
+  | `($_ «false») => `([bexpr| false])
   | _ => throw ()
 
 @[app_unexpander While.Expr.var]
 def unexpandIdent : Lean.PrettyPrinter.Unexpander
   | `($_ $x:str) =>
     let identLit := Lean.mkIdent $ Lean.Name.mkSimple x.getString
-    `([expr| $identLit])
-  | `($_ $x:ident) => `([expr| $($x)])
+    `([nexpr| $identLit:ident])
+  | `($_ $x:ident) => `([nexpr| $($x)])
   | _ => throw ()
 
 @[app_unexpander While.Expr.add]
 def unexpandAdd : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x + $y])
+  | `($_ [nexpr| $x] [nexpr| $y]) => `([nexpr| $x + $y])
   | _ => throw ()
 
 @[app_unexpander While.Expr.sub]
 def unexpandSub : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x - $y])
+  | `($_ [nexpr| $x] [nexpr| $y]) => `([nexpr| $x - $y])
   | _ => throw ()
 
 @[app_unexpander While.Expr.mul]
 def unexpandMul : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x * $y])
+  | `($_ [nexpr| $x] [nexpr| $y]) => `([nexpr| $x * $y])
   | _ => throw ()
 
 @[app_unexpander While.Expr.eq]
 def unexpandEq : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x == $y])
+  | `($_ [nexpr| $x] [nexpr| $y]) => `([bexpr| $x:nexpr == $y:nexpr])
   | _ => throw ()
 
 @[app_unexpander While.Expr.lt]
 def unexpandLt : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x < $y])
+  | `($_ [nexpr| $x] [nexpr| $y]) => `([bexpr| $x:nexpr < $y])
   | _ => throw ()
 
 @[app_unexpander While.Expr.gt]
 def unexpandGt : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x > $y])
+  | `($_ [nexpr| $x] [nexpr| $y]) => `([bexpr| $x:nexpr > $y])
   | _ => throw ()
 
 @[app_unexpander While.Expr.le]
 def unexpandLe : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x <= $y])
+  | `($_ [nexpr| $x] [nexpr| $y]) => `([bexpr| $x:nexpr <= $y])
   | _ => throw ()
 
 @[app_unexpander While.Expr.ge]
 def unexpandGe : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x >= $y])
+  | `($_ [nexpr| $x] [nexpr| $y]) => `([bexpr| $x:nexpr >= $y])
   | _ => throw ()
 
 @[app_unexpander While.Expr.and]
 def unexpandAnd : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x && $y])
+  | `($_ [bexpr| $x] [bexpr| $y]) => `([bexpr| $x && $y])
   | _ => throw ()
 
 @[app_unexpander While.Expr.or]
 def unexpandOr : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $x] [expr| $y]) => `([expr| $x || $y])
+  | `($_ [bexpr| $x] [bexpr| $y]) => `([bexpr| $x || $y])
   | _ => throw ()
 
 @[app_unexpander While.Com.skip]
@@ -185,17 +190,17 @@ def unexpandSeq : Lean.PrettyPrinter.Unexpander
 
 @[app_unexpander While.Com.cond]
 def unexpandCond : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $e] [com| $c1] [com| $c2]) => `([com| if $e then $c1 else $c2 fi])
+  | `($_ [bexpr| $e] [com| $c1] [com| $c2]) => `([com| if $e then $c1 else $c2 fi])
   | _ => throw ()
 
 @[app_unexpander While.Com.while]
 def unexpandWhile : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $e] [com| $c]) => `([com| while $e do $c od])
+  | `($_ [bexpr| $e] [com| $c]) => `([com| while $e do $c od])
   | _ => throw ()
 
 @[app_unexpander While.Com.assign]
 def unexpandAssign : Lean.PrettyPrinter.Unexpander
-  | `($_ $x:str  [expr| $e:expr]) =>
+  | `($_ $x:str  [nexpr| $e:nexpr]) =>
     let xl := Lean.mkIdent $ Lean.Name.mkSimple x.getString
     `([com| let $xl := $e])
   | _ => throw ()

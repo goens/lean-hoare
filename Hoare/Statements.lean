@@ -13,7 +13,7 @@ inductive Statement
 deriving DecidableEq
 
 declare_syntax_cat stmt
-syntax expr : stmt
+syntax bexpr : stmt
 syntax stmt " ∧ " stmt : stmt
 syntax stmt " ∨ " stmt : stmt
 syntax "¬" stmt : stmt
@@ -23,7 +23,7 @@ syntax "€" noWs term : stmt
 syntax "[stmt|" stmt "]" : term
 
 macro_rules
-  | `([stmt| $x:expr]) => `(Statement.atom [expr|$x])
+  | `([stmt| $x:bexpr]) => `(Statement.atom [bexpr|$x])
   | `([stmt| $x ∧ $y]) => `(Statement.conj [stmt|$x] [stmt|$y])
   | `([stmt| $x ∨ $y]) => `(Statement.disj [stmt|$x] [stmt|$y])
   | `([stmt| ¬ $x]) => `(Statement.neg [stmt|$x])
@@ -35,7 +35,7 @@ instance : Coe (Lean.TSyntax `expr) (Lean.TSyntax `stmt) where
 
 @[app_unexpander Statement.atom]
 def unexpandAtom : Lean.PrettyPrinter.Unexpander
-  | `($_ [expr| $e:expr]) => `([stmt| $e])
+  | `($_ [bexpr| $e:bexpr]) => `([stmt| $e:bexpr])
   | _ => throw ()
 
 @[app_unexpander Statement.disj]

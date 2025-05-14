@@ -16,7 +16,7 @@ X := X + 1
 theorem foo_holds' : TripleHolds foo := by
   let foo_stmt := foo.3
   let foo_com := foo.2
-  let foo_expr := [expr| X + 1]
+  let foo_expr := [nexpr| X + 1]
   apply TripleHolds.assign' foo_stmt foo_expr "X" foo_com
 
 def foo' : Triple :=
@@ -30,14 +30,14 @@ X := X + 2
 theorem foo'_holds : TripleHolds foo' := by
   let foo_stmt := foo'.3
   let foo_com := foo'.2
-  let foo_expr := [expr| X + 1]
+  let foo_expr := [nexpr| X + 1]
   apply TripleHolds.assign' foo_stmt foo_expr "X" foo_com
 
 
-#reduce [stmt| X == 1].subst "X" [expr| X + 1]
+#reduce [stmt| X == 1].subst "X" [nexpr| X + 1]
 
 -- This fails! There's another problem we have, namely that we're comparing syntactic equality of stmts, not their semantics.
-example : [stmt| X == 1].subst "X" [expr| X + 1] = [stmt| X == 2] := by
+example : [stmt| X == 1].subst "X" [nexpr| X + 1] = [stmt| X == 2] := by
   simp [Statement.subst, Expr.subst]
 
 -- Ideally, this should "just" work for this to be realtively useful.
