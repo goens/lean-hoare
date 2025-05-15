@@ -113,7 +113,33 @@ P.val? Γ = Q.val? Γ
 
 -- Before even doing expressions fully I want to first understand what happens for simplifying constants
 theorem simplifyConstants_preserves_eval (e : Expr) (Γ : Context) :
-  Expr.val? Γ (simplifyConstants e) = Expr.val? Γ e := by sorry
+  Expr.val? Γ (simplifyConstants e) = Expr.val? Γ e := by
+  induction e
+  case add e₁ e₂ ih₁ ih₂ =>
+    simp [simplifyConstants, Expr.val?]
+    rw [← ih₁, ← ih₂]
+    split
+    · case h_1 s₁ s₂ n₁ n₂ hs₁ hs₂ =>
+        simp [Expr.val?, hs₁, hs₂]
+    · case h_2 s₁ s₂ hs =>
+        simp [Expr.val?]
+  case sub e₁ e₂ ih₁ ih₂ =>
+    simp [simplifyConstants, Expr.val?]
+    rw [← ih₁, ← ih₂]
+    split
+    · case h_1 s₁ s₂ n₁ n₂ hs₁ hs₂ =>
+        simp [Expr.val?, hs₁, hs₂]
+    · case h_2 s₁ s₂ hs =>
+        simp [Expr.val?]
+  case mul e₁ e₂ ih₁ ih₂ =>
+    simp [simplifyConstants, Expr.val?]
+    rw [← ih₁, ← ih₂]
+    split
+    · case h_1 s₁ s₂ n₁ n₂ hs₁ hs₂ =>
+        simp [Expr.val?, hs₁, hs₂]
+    · case h_2 s₁ s₂ hs =>
+        simp [Expr.val?]
+  all_goals simp [Expr.val?, simplifyConstants]
 
 
 -- Now lets just try and understand what happens for x + e == e2 ---> x == e2 - e
