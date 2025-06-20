@@ -205,4 +205,15 @@ theorem WellTyped.some_ty {e ty} : e.ty = some ty → WellTyped e ty := by
 theorem WellTyped.ty {e ty} : WellTyped e ty ↔ e.ty = some ty :=
  ⟨fun h => ty_some h, fun h => some_ty h⟩
 
+def Expr.isBool (e : Expr) : Prop := e.ty = some .bool
+def Expr.isNum (e : Expr) : Prop := e.ty = some .num
+
+theorem Expr.isBool_iff_well_typed (e : Expr) : e.isBool ↔ WellTyped e .bool := by
+  simp [isBool]
+  rw [WellTyped.ty]
+
+theorem Expr.isNum_iff_well_typed (e : Expr) : e.isNum ↔ WellTyped e .num := by
+  simp [isNum]
+  rw [WellTyped.ty]
+
 end While

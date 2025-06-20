@@ -3,6 +3,8 @@ import Hoare.While.Types
 import Hoare.While.OperationalSemantics
 import Hoare.While.DenotationalSemantics
 
+namespace While
+
 inductive Statement
   | atom : While.Expr → Statement
   | disj : Statement → Statement → Statement
@@ -124,3 +126,5 @@ instance {s : Statement} {Γ  : While.Context} : Decidable (Statement.eval Γ s)
 syntax "$(" term ")" : statement
 macro_rules
 | `([stmt| $($t:term)]) => `($t)
+
+end While

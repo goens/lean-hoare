@@ -2,7 +2,6 @@ import Hoare.Statements
 
 namespace While
 
-
 def simplifyConstants : Expr → Expr
 | Expr.add e1 e2 =>
     let s1 := simplifyConstants e1
@@ -108,8 +107,6 @@ def Statement.normalize : Statement → Statement
 
 -- Before doing statements lets first try and do expressions
 
-def Equiv.expressions (P Q : Expr) : Prop := ∀ (Γ : Context),
-P.val? Γ = Q.val? Γ
 
 -- Before even doing expressions fully I want to first understand what happens for simplifying constants
 theorem simplifyConstants_preserves_eval (e : Expr) (Γ : Context) :
@@ -141,12 +138,25 @@ theorem simplifyConstants_preserves_eval (e : Expr) (Γ : Context) :
         simp [Expr.val?]
   all_goals simp [Expr.val?, simplifyConstants]
 
-
 -- Now lets just try and understand what happens for x + e == e2 ---> x == e2 - e
+theorem normalizeEq_equiv (e₁ e₂ : Expr) (Γ : Context) :
+  Expr.val? Γ (normalizeEq e₁ e₂) = Expr.val? Γ (Expr.eq e₁ e₂) := by
+  induction e₁
+  all_goals simp [normalizeEq]
+
+
+
+
 
  theorem NormalizeAdd (Γ : Context) (x : String) (e e2 : Expr) :
   Expr.val? Γ (Expr.eq (Expr.add (Expr.var x) e) e2) =
   Expr.val? Γ (normalizeEq (Expr.add (Expr.var x) e) e2) := by
   sorry
 
-theorem NormalisEquiv (P : Expr) : Equiv.expressions (Expr.normalize P) P := by sorry
+
+theorem NormalisEquiv (P : Expr) : Equiv.expressions (Expr.normalize P) P := by
+  intro Γ
+  induction P <;> simp [Expr.val?, Expr.normalize, *]
+  · case eq e₁ e₂ ih₁ ih₂ => sorry
+  · case lt
+sorry
