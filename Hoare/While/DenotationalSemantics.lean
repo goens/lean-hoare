@@ -167,7 +167,7 @@ theorem Expr.val_gt {e₁ e₂ : Expr} {val : Val} {Γ : Context} :
       contradiction
 
 theorem Expr.val_le {e₁ e₂ : Expr} {val : Val} {Γ : Context} :
-   (Expr.lt e₁ e₂).val? Γ = val →
+   (Expr.le e₁ e₂).val? Γ = val →
   ∃ n₁ n₂, e₁.val? Γ = Val.num n₁ ∧ e₂.val? Γ = Val.num n₂ ∧ val = Val.bool (n₁ ≤ n₂) := by
   intro h
   simp [val?] at h
@@ -178,9 +178,9 @@ theorem Expr.val_le {e₁ e₂ : Expr} {val : Val} {Γ : Context} :
   · case h_2 x1 x2 hx =>
       contradiction
 
-theorem Expr.val_gt {e₁ e₂ : Expr} {val : Val} {Γ : Context} :
-   (Expr.gt e₁ e₂).val? Γ = val →
-  ∃ n₁ n₂, e₁.val? Γ = Val.num n₁ ∧ e₂.val? Γ = Val.num n₂ ∧ val = Val.bool (n₁ > n₂) := by
+theorem Expr.val_ge {e₁ e₂ : Expr} {val : Val} {Γ : Context} :
+   (Expr.ge e₁ e₂).val? Γ = val →
+  ∃ n₁ n₂, e₁.val? Γ = Val.num n₁ ∧ e₂.val? Γ = Val.num n₂ ∧ val = Val.bool (n₁ ≥ n₂) := by
   intro h
   simp [val?] at h
   split at h
@@ -190,10 +190,45 @@ theorem Expr.val_gt {e₁ e₂ : Expr} {val : Val} {Γ : Context} :
   · case h_2 x1 x2 hx =>
       contradiction
 
-| le : Expr → Expr → Expr
-| ge : Expr → Expr → Expr
-| and : Expr → Expr → Expr
-| or : Expr → Expr → Expr
+theorem Expr.val_and {e₁ e₂ : Expr} {val : Val} {Γ : Context} :
+   (Expr.and e₁ e₂).val? Γ = val →
+  ∃ b₁ b₂, e₁.val? Γ = Val.bool b₁ ∧ e₂.val? Γ = Val.bool b₂ ∧ val = Val.bool (b₁ && b₂) := by
+  intro h
+  simp [val?] at h
+  split at h
+  · case h_1 x1 x2 n1 n2 heq1 heq2 =>
+      exists n1; exists n2
+      exact ⟨heq1, ⟨heq2, Option.some_inj.1 h |>.symm⟩⟩
+  · case h_2 x1 x2 hx =>
+      contradiction
+
+theorem Expr.val_or {e₁ e₂ : Expr} {val : Val} {Γ : Context} :
+   (Expr.or e₁ e₂).val? Γ = val →
+  ∃ b₁ b₂, e₁.val? Γ = Val.bool b₁ ∧ e₂.val? Γ = Val.bool b₂ ∧ val = Val.bool (b₁ || b₂) := by
+  intro h
+  simp [val?] at h
+  split at h
+  · case h_1 x1 x2 n1 n2 heq1 heq2 =>
+      exists n1; exists n2
+      exact ⟨heq1, ⟨heq2, Option.some_inj.1 h |>.symm⟩⟩
+  · case h_2 x1 x2 hx =>
+      contradiction
+
+theorem Expr.var_not_val_ty (s) : ∀ t : Ty, ¬ (Expr.var s).val_ty t := by
+  intro t hcontra
+  cases t
+  · case num =>
+      simp [val_ty] at hcontra
+      let v' : Val := Val.bool «true»
+      let Γ : Context := [(s,v')]
+      specialize hcontra Γ v'
+      simp [val?, Context.getVal?, Γ, v', Val.ty] at hcontra
+  · case bool =>
+      simp [val_ty] at hcontra
+      let v' : Val := Val.num 0
+      let Γ : Context := [(s,v')]
+      specialize hcontra Γ v'
+      simp [val?, Context.getVal?, Γ, v', Val.ty] at hcontra
 
 theorem Expr.well_typed_val {t : Ty} {e : Expr} : WellTyped e t ↔ e.val_ty t := by
   constructor
@@ -240,24 +275,83 @@ theorem Expr.well_typed_val {t : Ty} {e : Expr} : WellTyped e t ↔ e.val_ty t :
               rw [hnval]
               simp [Val.ty]
       · case lt e₁ e₂ ihe₁ ihe₂ ihv =>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+          cases h
+          case lt ihwt₁ ihwt₂ =>
+            simp [val?] at ihv
+            cases Expr.val_lt hval.symm
+            · case intro hexists =>
+              have ⟨n1, ⟨hn₁, hn₂, hnval⟩⟩ := hexists
+              rw [hnval]
+              simp [Val.ty]
+      · case gt e₁ e₂ ihe₁ ihe₂ ihv =>
+          cases h
+          case gt ihwt₁ ihwt₂ =>
+            simp [val?] at ihv
+            cases Expr.val_gt hval.symm
+            · case intro hexists =>
+              have ⟨n1, ⟨hn₁, hn₂, hnval⟩⟩ := hexists
+              rw [hnval]
+              simp [Val.ty]
+      · case le e₁ e₂ ihe₁ ihe₂ ihv =>
+          cases h
+          case le ihwt₁ ihwt₂ =>
+            simp [val?] at ihv
+            cases Expr.val_le hval.symm
+            · case intro hexists =>
+              have ⟨n1, ⟨hn₁, hn₂, hnval⟩⟩ := hexists
+              rw [hnval]
+              simp [Val.ty]
+      · case ge e₁ e₂ ihe₁ ihe₂ ihv =>
+          cases h
+          case ge ihwt₁ ihwt₂ =>
+            simp [val?] at ihv
+            cases Expr.val_ge hval.symm
+            · case intro hexists =>
+              have ⟨n1, ⟨hn₁, hn₂, hnval⟩⟩ := hexists
+              rw [hnval]
+              simp [Val.ty]
+      · case and e₁ e₂ ihe₁ ihe₂ ihv =>
+          cases h
+          case and ihwt₁ ihwt₂ =>
+            simp [val?] at ihv
+            cases Expr.val_and hval.symm
+            · case intro hexists =>
+              have ⟨n1, ⟨hn₁, hn₂, hnval⟩⟩ := hexists
+              rw [hnval]
+              simp [Val.ty]
+      · case or e₁ e₂ ihe₁ ihe₂ ihv =>
+          cases h
+          case or ihwt₁ ihwt₂ =>
+            simp [val?] at ihv
+            cases Expr.val_or hval.symm
+            · case intro hexists =>
+              have ⟨n1, ⟨hn₁, hn₂, hnval⟩⟩ := hexists
+              rw [hnval]
+              simp [Val.ty]
+  · case mpr =>
+      simp [val_ty]
+      intro h
+      induction e
+      · case num _ =>
+        simp [val?, Val.ty] at h
+        rw [←h]
+        apply WellTyped.num
+      · case bool _ =>
+        simp [val?, Val.ty] at h
+        rw [←h]
+        apply WellTyped.bool
+      · case var v =>
+         exfalso
+         apply Expr.var_not_val_ty v t
+         assumption
+      · case add e₁ e₂ ih₁ ih₂ =>
+        -- t has to be num
+        cases t
+        · case num =>
+          sorry
+        · case bool =>
+          -- contradiction
+          sorry
+      all_goals sorry
 
 end While
