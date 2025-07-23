@@ -1,0 +1,9 @@
+name = "Hoare"
+defaultTargets = ["hoare"]
+
+[[lean_lib]]
+name = "Hoare"
+
+[[lean_exe]]
+name = "hoare"
+root = "Main"
